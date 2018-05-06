@@ -1,13 +1,13 @@
-
 from __future__ import division
 
-import torch 
+import os
+import requests
+import sys
+import torch
 import torch.nn as nn
-import torch.nn.functional as F 
 from torch.autograd import Variable
 import numpy as np
 import cv2 
-import matplotlib.pyplot as plt
 from bbox import bbox_iou
 
 def count_parameters(model):
@@ -360,9 +360,7 @@ def write_results_half(prediction, confidence, num_classes, nms = True, nms_conf
                     #Remove the non-zero entries
                     non_zero_ind = torch.nonzero(image_pred_class[:,4]).squeeze()
                     image_pred_class = image_pred_class[non_zero_ind]
-                    
-                    
-            
+
             #Concatenate the batch_id of the image to the detection
             #this helps us identify which image does the detection correspond to 
             #We use a linear straucture to hold ALL the detections from the batch
@@ -379,3 +377,30 @@ def write_results_half(prediction, confidence, num_classes, nms = True, nms_conf
                 output = torch.cat((output,out))
     
     return output
+
+
+def download(url, dst):
+    """
+    Downloads a file from a url to the given destination with % finished bar.
+    :param url: The url.
+    :param dst: The destination.
+    """
+    if os.path.isfile(dst):
+        return
+
+    with open(dst, "wb") as f:
+        print("Downloading %s to %s" % (url, dst))
+        response = requests.get(url, stream=True)
+        total_length = response.headers.get('content-length')
+
+        if total_length is None:  # no content length header
+            f.write(response.content)
+        else:
+            dl = 0
+            total_length = int(total_length)
+            for data in response.iter_content(chunk_size=4096):
+                dl += len(data)
+                f.write(data)
+                done = int(50 * dl / total_length)
+                sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50 - done)))
+                sys.stdout.flush()

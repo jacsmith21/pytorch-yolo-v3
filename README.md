@@ -26,6 +26,10 @@ Using PyTorch 0.3 will break the detector.
 
 ![Detection Example](https://i.imgur.com/m2jwneng.png)
 ## Running the detector
+Install the dependancies:
+```
+pip install -r requirements.txt
+```
 
 ### On single or multiple images
 
@@ -35,7 +39,6 @@ This time around, for v3, authors has supplied a weightsfile only for COCO [here
 the weights file into your repo directory. Or, you could just type (if you're on Linux)
 
 ```
-wget https://pjreddie.com/media/files/yolov3.weights 
 python detect.py --images imgs --det det 
 ```
 
