@@ -88,7 +88,7 @@ if __name__ ==  '__main__':
     num_boxes = sum([3*(x**2) for x in num_boxes])
     
     for scale in scales:
-        li = list(range((scale - 1)* num_boxes // 3, scale * num_boxes // 3))
+        li = list(range((scale - 1) * num_boxes // 3, scale * num_boxes // 3))
         scales_indices.extend(li)
 
     images = args.images
@@ -118,8 +118,7 @@ if __name__ ==  '__main__':
     #If there's a GPU availible, put the model on GPU
     if CUDA:
         model.cuda()
-    
-    
+
     #Set the model in evaluation mode
     model.eval()
     

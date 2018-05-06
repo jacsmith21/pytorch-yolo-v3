@@ -6,8 +6,6 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 import numpy as np
 import cv2 
-import matplotlib.pyplot as plt
-from util import count_parameters as count
 from util import convert2cpu as cpu
 from util import predict_transform
 
@@ -44,10 +42,9 @@ def parse_cfg(cfgfile):
     """
     file = open(cfgfile, 'r')
     lines = file.read().split('\n')     #store the lines in a list
-    lines = [x for x in lines if len(x) > 0] #get read of the empty lines 
+    lines = [x for x in lines if len(x) > 0] #get rid of the empty lines
     lines = [x for x in lines if x[0] != '#']  
-    lines = [x.rstrip().lstrip() for x in lines]
-
+    lines = [x.strip() for x in lines]
     
     block = {}
     blocks = []
@@ -59,12 +56,11 @@ def parse_cfg(cfgfile):
                 block = {}
             block["type"] = line[1:-1].rstrip()
         else:
-            key,value = line.split("=")
+            key, value = line.split("=")
             block[key.rstrip()] = value.lstrip()
     blocks.append(block)
     return blocks
-#    print('\n\n'.join([repr(x) for x in blocks]))
-    
+
 
 class MaxPoolStride1(nn.Module):
     def __init__(self, kernel_size):
@@ -142,7 +138,6 @@ def create_modules(blocks):
     module_list = nn.ModuleList()
     
     index = 0    #indexing blocks helps with implementing route  layers (skip connections)
-
     
     prev_filters = 3
     
@@ -165,7 +160,7 @@ def create_modules(blocks):
                 batch_normalize = 0
                 bias = True
                 
-            filters= int(x["filters"])
+            filters = int(x["filters"])
             padding = int(x["pad"])
             kernel_size = int(x["size"])
             stride = int(x["stride"])
@@ -176,7 +171,7 @@ def create_modules(blocks):
                 pad = 0
                 
             #Add the convolutional layer
-            conv = nn.Conv2d(prev_filters, filters, kernel_size, stride, pad, bias = bias)
+            conv = nn.Conv2d(prev_filters, filters, kernel_size, stride, pad, bias=bias)
             module.add_module("conv_{0}".format(index), conv)
             
             #Add the Batch Norm Layer
@@ -268,7 +263,6 @@ def create_modules(blocks):
     return (net_info, module_list)
 
 
-
 class Darknet(nn.Module):
     def __init__(self, cfgfile):
         super(Darknet, self).__init__()
@@ -276,15 +270,12 @@ class Darknet(nn.Module):
         self.net_info, self.module_list = create_modules(self.blocks)
         self.header = torch.IntTensor([0,0,0,0])
         self.seen = 0
-
-        
         
     def get_blocks(self):
         return self.blocks
     
     def get_module_list(self):
         return self.module_list
-
                 
     def forward(self, x, CUDA):
         detections = []
@@ -353,14 +344,9 @@ class Darknet(nn.Module):
                     detections = torch.cat((detections, x), 1)
                 
                 outputs[i] = outputs[i-1]
-        
-        
-        try:
-            return detections
-        except:
-            return 0
 
-            
+        return detections
+
     def load_weights(self, weightfile):
         
         #Open the weights file
